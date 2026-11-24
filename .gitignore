@@ -1,0 +1,23 @@
+# Env & secrets
+.env
+.env.local
+
+# SQLite data & exports
+data/
+exports/
+*.db
+*.db-shm
+*.db-wal
+
+# Go binaries
+bin/
+backend/meta-views
+
+# Node & Frontend
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+npm-debug.log*
+
+# OS
+.DS_Store
