@@ -82,7 +82,7 @@ func printUsage(out io.Writer) {
 	fmt.Fprintln(out, `Meta Hashtag Views CLI (Go)
 
 Usage:
-  meta-views serve  [--port 8080]
+  meta-views serve  [--host 127.0.0.1] [--port 8080]
   meta-views fetch  --hashtag <tag> [--platforms ig,fb] [--limit 50] [--mock] [--enrich-fb] [--ig-type reels]
   meta-views report --hashtag <tag>
   meta-views export --hashtag <tag> [--format csv|json] [--out ./exports]`)

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -59,5 +60,44 @@ func TestFormatDots(t *testing.T) {
 	}
 	if got := FormatDots(42); got != "42" {
 		t.Fatalf("FormatDots(42) = %q, want 42", got)
+	}
+}
+
+func TestFormatListenAddrAndLoopbackBind(t *testing.T) {
+	cases := []struct {
+		host     string
+		port     string
+		wantAddr string
+		wantURL  string
+	}{
+		{host: "127.0.0.1", port: "8095", wantAddr: "127.0.0.1:8095", wantURL: "http://127.0.0.1:8095"},
+		{host: "0.0.0.0", port: "8080", wantAddr: "0.0.0.0:8080", wantURL: "http://0.0.0.0:8080"},
+		{host: "::1", port: "8080", wantAddr: "[::1]:8080", wantURL: "http://[::1]:8080"},
+		{host: "[::1]", port: "8080", wantAddr: "[::1]:8080", wantURL: "http://[::1]:8080"},
+		{host: "", port: "8080", wantAddr: ":8080", wantURL: "http://localhost:8080"},
+	}
+
+	for _, tc := range cases {
+		gotAddr := formatListenAddr(tc.host, tc.port)
+		if gotAddr != tc.wantAddr {
+			t.Fatalf("formatListenAddr(%q, %q) = %q, want %q", tc.host, tc.port, gotAddr, tc.wantAddr)
+		}
+		if gotURL := formatLogURL(gotAddr); gotURL != tc.wantURL {
+			t.Fatalf("formatLogURL(%q) = %q, want %q", gotAddr, gotURL, tc.wantURL)
+		}
+	}
+
+	ln, err := net.Listen("tcp", formatListenAddr("127.0.0.1", "0"))
+	if err != nil {
+		t.Fatalf("net.Listen failed: %v", err)
+	}
+	defer ln.Close()
+
+	tcpAddr, ok := ln.Addr().(*net.TCPAddr)
+	if !ok {
+		t.Fatalf("listener addr type = %T, want *net.TCPAddr", ln.Addr())
+	}
+	if got := tcpAddr.IP.String(); got != "127.0.0.1" {
+		t.Fatalf("bound IP = %q, want 127.0.0.1", got)
 	}
 }

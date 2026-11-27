@@ -31,6 +31,7 @@ cp .env.example .env
 | `ENABLED_PLATFORMS` | `instagram,facebook,tiktok` | Comma-separated enabled platforms (`ig`/`instagram`, `fb`/`facebook`, `tt`/`tiktok`). Disabled platforms return `403` from the API and are hidden in the UI. |
 | `ALLOW_MOCK_MODE` | `true` | Allows local simulation runs. Set to `false` in production so searches never fall back to simulated data. |
 | `APIFY_API_TOKEN` | _(empty)_ | Apify API token for live Instagram and Facebook scraping. |
+| `HOST` | `127.0.0.1` | HTTP server bind host for `serve`. Defaults to loopback so reverse proxies or Cloudflare Tunnel handle external traffic; set `0.0.0.0` only when direct LAN/container access is required. |
 | `PORT` | `8080` | HTTP server port for `serve`. |
 | `DB_PATH` | `./data/hashtag-views.db` | SQLite database file path. |
 | `FRONTEND_ORIGIN` | `http://localhost:5173` | Allowed CORS origin during separate frontend development. |

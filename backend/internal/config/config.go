@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	DefaultHost             = "127.0.0.1"
 	DefaultPort             = "8080"
 	DefaultDBRelPath        = "./data/hashtag-views.db"
 	DefaultFrontendOrigin   = "http://localhost:5173"
@@ -21,6 +22,7 @@ const (
 
 type Config struct {
 	ProjectRoot      string
+	Host             string
 	Port             string
 	DBPath           string
 	FrontendOrigin   string
@@ -54,6 +56,7 @@ func Load() Config {
 
 	return Config{
 		ProjectRoot:     root,
+		Host:            normalizeHost(os.Getenv("HOST")),
 		Port:            validatePort(getEnvOrDefault("PORT", DefaultPort)),
 		DBPath:          filepath.Clean(dbPath),
 		FrontendOrigin:  getEnvOrDefault("FRONTEND_ORIGIN", DefaultFrontendOrigin),
@@ -87,6 +90,13 @@ func getEnvOrDefault(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func normalizeHost(raw string) string {
+	if h := strings.TrimSpace(raw); h != "" {
+		return h
+	}
+	return DefaultHost
 }
 
 func validatePort(raw string) string {

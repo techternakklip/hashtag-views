@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -72,6 +73,7 @@ func Run(args []string, stdout, stderr io.Writer) error {
 func runServe(cfg config.Config, repo *store.Repository, runner *service.Runner, args []string, stdout, stderr io.Writer) error {
 	fs := flag.NewFlagSet("serve", flag.ContinueOnError)
 	fs.SetOutput(stderr)
+	host := fs.String("host", cfg.Host, "HTTP server bind host")
 	port := fs.String("port", cfg.Port, "HTTP server port")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -87,8 +89,9 @@ func runServe(cfg config.Config, repo *store.Repository, runner *service.Runner,
 		Logger:          logger,
 	})
 
+	listenAddr := formatListenAddr(*host, *port)
 	srv := &http.Server{
-		Addr:              ":" + *port,
+		Addr:              listenAddr,
 		Handler:           router,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
@@ -102,7 +105,7 @@ func runServe(cfg config.Config, repo *store.Repository, runner *service.Runner,
 	errCh := make(chan error, 1)
 	go func() {
 		logger.Info("Meta Hashtag Views API listening",
-			"addr", "http://localhost:"+*port,
+			"addr", formatLogURL(listenAddr),
 			"db_path", cfg.DBPath,
 			"apify_configured", cfg.ApifyAPIToken != "",
 			"enabled_platforms", cfg.EnabledPlatforms,
@@ -258,4 +261,19 @@ func runExport(repo *store.Repository, args []string, stdout, stderr io.Writer) 
 
 	fmt.Fprintf(stdout, "Export berhasil (%d video): %s\n", len(videos), targetPath)
 	return nil
+}
+
+func formatListenAddr(host, port string) string {
+	h := strings.TrimSpace(host)
+	if strings.HasPrefix(h, "[") && strings.HasSuffix(h, "]") {
+		h = h[1 : len(h)-1]
+	}
+	return net.JoinHostPort(h, strings.TrimSpace(port))
+}
+
+func formatLogURL(listenAddr string) string {
+	if strings.HasPrefix(listenAddr, ":") {
+		return "http://localhost" + listenAddr
+	}
+	return "http://" + listenAddr
 }

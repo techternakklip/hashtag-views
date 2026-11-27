@@ -45,3 +45,25 @@ func TestLoadFeatureFlags(t *testing.T) {
 		t.Fatalf("fallback EnabledPlatforms = %v, want [tiktok]", fallbackCfg.EnabledPlatforms)
 	}
 }
+
+func TestLoadHostConfig(t *testing.T) {
+	t.Setenv("HOST", "")
+	if got := Load().Host; got != DefaultHost {
+		t.Fatalf("empty HOST = %q, want %q", got, DefaultHost)
+	}
+
+	t.Setenv("HOST", "   ")
+	if got := Load().Host; got != DefaultHost {
+		t.Fatalf("whitespace HOST = %q, want %q", got, DefaultHost)
+	}
+
+	t.Setenv("HOST", " 0.0.0.0 ")
+	if got := Load().Host; got != "0.0.0.0" {
+		t.Fatalf("trimmed HOST = %q, want %q", got, "0.0.0.0")
+	}
+
+	t.Setenv("HOST", "::1")
+	if got := Load().Host; got != "::1" {
+		t.Fatalf("ipv6 HOST = %q, want %q", got, "::1")
+	}
+}
